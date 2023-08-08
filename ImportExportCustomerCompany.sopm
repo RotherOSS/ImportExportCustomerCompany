@@ -33,18 +33,6 @@
 
         $Kernel::OM->Get($CodeModule)->CodeUpgrade();
     ]]></CodeUpgrade>
-    <CodeUpgrade Type="pre"><![CDATA[
-        # create the package name
-        my $CodeModule = 'var::packagesetup::' . $Param{Structure}->{Name}->{Content};
-
-        $Kernel::OM->Get($CodeModule)->CodeUpgradePre();
-    ]]></CodeUpgrade>
-    <CodeUpgrade Type="post" Version="2.2.92"><![CDATA[
-        # create the package name
-        my $CodeModule = 'var::packagesetup::' . $Param{Structure}->{Name}->{Content};
-
-        $Kernel::OM->Get($CodeModule)->CodeUpgradeFromLowerThan_2_2_92();
-    ]]></CodeUpgrade>
     <CodeUninstall Type="pre"><![CDATA[
         # create the package name
         my $CodeModule = 'var::packagesetup::' . $Param{Structure}->{Name}->{Content};
