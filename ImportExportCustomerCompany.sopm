@@ -3,6 +3,7 @@
     <Name>ImportExportCustomerCompany</Name>
     <Version>10.1.0</Version>
     <Framework>10.1.x</Framework>
+    <PackageRequired Version="10.1.2">ImportExport</PackageRequired>
     <Vendor>Rother OSS GmbH</Vendor>
     <URL>https://rother-oss.com/</URL>
     <License>GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007</License>
