@@ -1,19 +1,10 @@
 # --
-# ImportExportCustomerCompany.pm - code run during package de-/installation
-# Copyright (C) 2006-2015 c.a.p.e. IT GmbH, http://www.cape-it.de
-#
-# written/edited by:
-# * Martin(dot)Balzarek(at)cape-it.de
-# * Torsten(dot)Thau(at)cape-it.de
-# * Anna(dot)Litvinova(at)cape(dash)it(dot)de
-# * Stefan(dot)Mehlig(at)cape(dash)it(dot)de
-# * Thomas(dot)Lange(at)cape(dash)it(dot)de
-# --
-# $Id: ImportExportCustomerCompany.pm,v 1.18 2015/11/16 07:15:23 tlange Exp $
+# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
+# Copyright (C) 2022-2023 OTOBO GmbH, http://otobo.de/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
-# the enclosed file COPYING for license information (GPL). If you
-# did not receive this file, see http://www.gnu.org/licenses/gpl-2.0.txt.
+# the enclosed file COPYING for license information (AGPL). If you
+# did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
 # --
 
 package var::packagesetup::ImportExportCustomerCompany;
@@ -22,6 +13,7 @@ use strict;
 use warnings;
 
 our @ObjectDependencies = (
+    'Kernel::System::ImportExport::ObjectBackend::CustomerCompany',
     'Kernel::System::ImportExport',
     'Kernel::System::CustomerUser',
     'Kernel::System::Log',
@@ -30,7 +22,7 @@ our @ObjectDependencies = (
 
 =head1 NAME
 
-ImportExportCustomerCompany.pm - code to excecute during package installation
+var::packagesetup::ImportExportCustomerCompany - code to excecute during package installation
 
 =head1 SYNOPSIS
 
@@ -38,11 +30,7 @@ All functions
 
 =head1 PUBLIC INTERFACE
 
-=over 4
-
-=cut
-
-=item new()
+=head2 new()
 
 create an object
 
@@ -96,7 +84,7 @@ sub new {
     return $Self;
 }
 
-=item CodeInstall()
+=head2 CodeInstall()
 
 run the code install part
 
@@ -112,7 +100,7 @@ sub CodeInstall {
     return 1;
 }
 
-=item CodeReinstall()
+=head2 CodeReinstall()
 
 run the code reinstall part
 
@@ -128,7 +116,7 @@ sub CodeReinstall {
     return 1;
 }
 
-=item CodeUpgrade()
+=head2 CodeUpgrade()
 
 run the code upgrade part
 
@@ -142,7 +130,7 @@ sub CodeUpgrade {
     return 1;
 }
 
-=item CodeUninstall()
+=head2 CodeUninstall()
 
 run the code uninstall part
 
@@ -289,7 +277,10 @@ sub _CreateMappings () {
 
         # if ValidID is available - offer Valid instead..
         if ( $CurrAttributeMapping->[0] eq 'ValidID' ) {
-            $CurrAttribute = { Key => 'Valid', Value => 'Validity', };
+            $CurrAttribute = {
+                Key   => 'Valid',
+                Value => 'Validity',
+            };
         }
 
         push( @ElementList, $CurrAttribute );
@@ -300,8 +291,8 @@ sub _CreateMappings () {
         {
             SourceExportData => {
                 FormatData => {
-                    ColumnSeparator => 'Semicolon',
-                    Charset         => 'UTF-8',
+                    ColumnSeparator      => 'Semicolon',
+                    Charset              => 'UTF-8',
                     IncludeColumnHeaders => '1',
                 },
 
@@ -321,7 +312,7 @@ sub _CreateMappings () {
         UserID     => 1,
     );
     my $AttributeValues;
-    foreach my $Default ( @{$ObjectAttributeList} ) {
+    for my $Default ( @{$ObjectAttributeList} ) {
         $AttributeValues->{ $Default->{Key} } = $Default->{Input}->{ValueDefault};
     }
     $ExportDataSets->[0]->{SourceExportData}->{ObjectData} = $AttributeValues;

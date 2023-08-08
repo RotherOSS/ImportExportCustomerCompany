@@ -1,12 +1,6 @@
 # --
-# ImportExportObjectCustomerCompany.t - all import export tests for the CustomerCompany object backend
-# Copyright (C) 2006-2012 c.a.p.e. IT GmbH, http://www.cape-it.de/
-#
-# written/edited by:
-# * Torsten(dot)Thau(at)cape(dash)it(dot)de
-#
-# --
-# $Id: ImportExportObjectCustomerCompany.t,v 1.3 2012/04/13 09:40:08 tto Exp $
+# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
+# Copyright (C) 2022-2023 OTOBO GmbH, http://otobo.de/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
 # the enclosed file COPYING for license information (AGPL). If you

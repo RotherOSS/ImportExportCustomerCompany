@@ -1,20 +1,12 @@
 # --
-# Kernel/Language/de_ImportExportCustomerCompany.pm - provides german language
-# Copyright (C) 2006-2015 c.a.p.e. IT GmbH, http://www.cape-it.de
-#
-# translation for ImportExportCustomerCompany module
-# written/edited by:
-# * Torsten(dot)Thau(at)cape(dash)it(dot)de
-# * Anna(dot)Litvinova(at)cape(dash)it(dot)de
-# * Stefan(dot)Mehlig(at)cape(dash)it(dot)de
-#
-# --
-# $Id: de_ImportExportCustomerCompany.pm,v 1.4 2015/11/16 07:15:23 tlange Exp $
+# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
+# Copyright (C) 2022-2023 OTOBO GmbH, http://otobo.de/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
 # the enclosed file COPYING for license information (AGPL). If you
 # did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
 # --
+
 package Kernel::Language::de_ImportExportCustomerCompany;
 
 use strict;

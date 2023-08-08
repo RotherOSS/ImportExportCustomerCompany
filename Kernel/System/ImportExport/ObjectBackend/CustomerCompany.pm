@@ -1,20 +1,10 @@
 # --
-# Kernel/System/ImportExport/ObjectBackend/CustomerCompany.pm
-# Copyright (C) 2006-2015 c.a.p.e. IT GmbH, http://www.cape-it.de
-#
-# import/export backend for CustomerCompany
-# written/edited by:
-# * Anna(dot)Litvinova(at)cape(dash)it(dot)de
-# * Torsten(dot)Thau(at)cape(dash)it(dot)de
-# * Stefan(dot)Mehlig(at)cape(dash)it(dot)de
-# * Ralf(dot)Boehm(at)cape(dash)it(dot)de
-# * Thomas(dot)Lange(at)cape(dash)it(dot)de
-# --
-# $Id: CustomerCompany.pm,v 1.11 2015/11/16 07:15:22 tlange Exp $
+# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
+# Copyright (C) 2022-2023 OTOBO GmbH, http://otobo.de/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
 # the enclosed file COPYING for license information (AGPL). If you
-# did not receive this file, see http://www.gnu.org/licenses/gpl-2.0.txt.
+# did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
 # --
 
 package Kernel::System::ImportExport::ObjectBackend::CustomerCompany;
@@ -26,7 +16,9 @@ our @ObjectDependencies = (
     'Kernel::System::ImportExport',
     'Kernel::System::CustomerCompany',
     'Kernel::System::Log',
-    'Kernel::Config'
+    'Kernel::Config',
+    'Kernel::System::ReferenceData',
+    'Kernel::System::Valid',
 );
 
 =head1 NAME
@@ -37,11 +29,7 @@ Kernel::System::ImportExport::ObjectBackend::CustomerCompany - import/export bac
 
 All functions to import and export CustomerCompany entries
 
-=over 4
-
-=cut
-
-=item new()
+=head2 new()
 
 create an object
 
@@ -84,7 +72,7 @@ sub new {
     return $Self;
 }
 
-=item ObjectAttributesGet()
+=head2 ObjectAttributesGet()
 
 get the object attributes of an object as array/hash reference
 
@@ -100,7 +88,10 @@ sub ObjectAttributesGet {
     # check needed object
     if ( !$Param{UserID} ) {
         $Kernel::OM->Get('Kernel::System::Log')
-            ->Log( Priority => 'error', Message => 'Need UserID!' );
+            ->Log(
+                Priority => 'error',
+                Message  => 'Need UserID!'
+            );
         return;
     }
 
@@ -124,7 +115,7 @@ sub ObjectAttributesGet {
     return $Attributes;
 }
 
-=item MappingObjectAttributesGet()
+=head2 MappingObjectAttributesGet()
 
 get the mapping attributes of an object as array/hash reference
 
@@ -171,7 +162,10 @@ sub MappingObjectAttributesGet {
 
         # if ValidID is available - offer Valid instead..
         if ( $CurrAttributeMapping->[0] eq 'ValidID' ) {
-            $CurrAttribute = { Key => 'Valid', Value => 'Validity', };
+            $CurrAttribute = {
+                Key   => 'Valid',
+                Value => 'Validity',
+            };
         }
 
         push( @ElementList, $CurrAttribute );
@@ -204,7 +198,7 @@ sub MappingObjectAttributesGet {
     return $Attributes;
 }
 
-=item SearchAttributesGet()
+=head2 SearchAttributesGet()
 
 get the search object attributes of an object as array/hash reference
 
@@ -238,7 +232,7 @@ sub SearchAttributesGet {
     return;
 }
 
-=item ExportDataGet()
+=head2 ExportDataGet()
 
 get export data as 2D-array-hash reference
 
@@ -301,8 +295,8 @@ sub ExportDataGet {
         # get mapping object data
         my $MappingObjectData =
             $Kernel::OM->Get('Kernel::System::ImportExport')->MappingObjectDataGet(
-            MappingID => $MappingID,
-            UserID    => $Param{UserID},
+                MappingID => $MappingID,
+                UserID    => $Param{UserID},
             );
 
         # check mapping object data
@@ -337,7 +331,7 @@ sub ExportDataGet {
             if ( $CustomerCompanyData{ValidID} ) {
                 $CustomerCompanyData{Valid}
                     = $Kernel::OM->Get('Kernel::System::Valid')->ValidLookup(
-                    ValidID => $CustomerCompanyData{ValidID},
+                        ValidID => $CustomerCompanyData{ValidID},
                     );
             }
 
@@ -358,7 +352,7 @@ sub ExportDataGet {
     return \@ExportData;
 }
 
-=item ImportDataSave()
+=head2 ImportDataSave()
 
 import one row of the import data
 
@@ -440,8 +434,8 @@ sub ImportDataSave {
         # get mapping object data
         my $MappingObjectData =
             $Kernel::OM->Get('Kernel::System::ImportExport')->MappingObjectDataGet(
-            MappingID => $MappingID,
-            UserID    => $Param{UserID},
+                MappingID => $MappingID,
+                UserID    => $Param{UserID},
             );
 
         # check mapping object data
@@ -531,8 +525,9 @@ sub ImportDataSave {
         $NewCompany = 0;
     }
 
+    KEY:
     for my $Key ( keys(%NewCustomerCompanyData) ) {
-        next if ( !$NewCustomerCompanyData{$Key} );
+        next KEY if ( !$NewCustomerCompanyData{$Key} );
         $CustomerCompanyData{$Key} = $NewCustomerCompanyData{$Key};
     }
 
