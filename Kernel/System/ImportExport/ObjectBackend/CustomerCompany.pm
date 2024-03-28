@@ -1,10 +1,17 @@
 # --
-# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
-# Copyright (C) 2022-2023 OTOBO GmbH, http://otobo.de/
+# OTOBO is a web-based ticketing system for service organisations.
 # --
-# This software comes with ABSOLUTELY NO WARRANTY. For details, see
-# the enclosed file COPYING for license information (AGPL). If you
-# did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
+# Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
+# Copyright (C) 2022-2024 Rother OSS GmbH, https://otobo.de/
+# --
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 # --
 
 package Kernel::System::ImportExport::ObjectBackend::CustomerCompany;
@@ -231,6 +238,8 @@ sub SearchAttributesGet {
 
     return;
 }
+
+=for stopwords 2D-array-hash
 
 =head2 ExportDataGet()
 
