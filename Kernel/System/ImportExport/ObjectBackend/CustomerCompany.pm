@@ -2,7 +2,7 @@
 # OTOBO is a web-based ticketing system for service organisations.
 # --
 # Copyright (C) 2012-2023 Znuny GmbH, http://znuny.com/
-# Copyright (C) 2022-2024 Rother OSS GmbH, https://otobo.de/
+# Copyright (C) 2019-2024 Rother OSS GmbH, https://otobo.de/
 # --
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -16,8 +16,17 @@
 
 package Kernel::System::ImportExport::ObjectBackend::CustomerCompany;
 
+use v5.24;
 use strict;
 use warnings;
+use namespace::autoclean;
+use utf8;
+
+# core modules
+
+# CPAN modules
+
+# OTOBO modules
 
 our @ObjectDependencies = (
     'Kernel::System::ImportExport',
@@ -81,7 +90,7 @@ sub new {
 
 =head2 ObjectAttributesGet()
 
-get the object attributes of an object as array/hash reference
+get the object attributes of an object as a ref to an array of hash references
 
     my $Attributes = $ObjectBackend->ObjectAttributesGet(
         UserID => 1,
@@ -94,11 +103,11 @@ sub ObjectAttributesGet {
 
     # check needed object
     if ( !$Param{UserID} ) {
-        $Kernel::OM->Get('Kernel::System::Log')
-            ->Log(
-                Priority => 'error',
-                Message  => 'Need UserID!'
-            );
+        $Kernel::OM->Get('Kernel::System::Log')->Log(
+            Priority => 'error',
+            Message  => 'Need UserID!',
+        );
+
         return;
     }
 
@@ -124,12 +133,25 @@ sub ObjectAttributesGet {
 
 =head2 MappingObjectAttributesGet()
 
-get the mapping attributes of an object as array/hash reference
+gets the mapping attributes of an object as reference to an array of hash references.
 
     my $Attributes = $ObjectBackend->MappingObjectAttributesGet(
         TemplateID => 123,
         UserID     => 1,
     );
+
+Returns:
+
+    # TODO
+    my $Attributes = [
+        {
+            Input => {
+                Data => [
+                    [...]
+                ],
+            },
+        },
+    ];
 
 =cut
 
@@ -143,12 +165,15 @@ sub MappingObjectAttributesGet {
                 Priority => 'error',
                 Message  => "Need $Argument!",
             );
+
             return;
         }
     }
 
+    my $ImportExportObject = $Kernel::OM->Get('Kernel::System::ImportExport');
+
     # get object data
-    my $ObjectData = $Kernel::OM->Get('Kernel::System::ImportExport')->ObjectDataGet(
+    my $ObjectData = $ImportExportObject->ObjectDataGet(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -226,12 +251,15 @@ sub SearchAttributesGet {
                 Priority => 'error',
                 Message  => "Need $Argument!",
             );
+
             return;
         }
     }
 
+    my $ImportExportObject = $Kernel::OM->Get('Kernel::System::ImportExport');
+
     # get object data
-    my $ObjectData = $Kernel::OM->Get('Kernel::System::ImportExport')->ObjectDataGet(
+    my $ObjectData = $ImportExportObject->ObjectDataGet(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -239,13 +267,11 @@ sub SearchAttributesGet {
     return;
 }
 
-=for stopwords 2D-array-hash
-
 =head2 ExportDataGet()
 
-get export data as 2D-array-hash reference
+get export data as a reference to an array for array references, that is a C<2D-table>
 
-    my $ExportData = $ObjectBackend->ExportDataGet(
+    my $Rows = $ObjectBackend->ExportDataGet(
         TemplateID => 123,
         UserID     => 1,
     );
@@ -262,12 +288,15 @@ sub ExportDataGet {
                 Priority => 'error',
                 Message  => "Need $Argument!",
             );
+
             return;
         }
     }
 
+    my $ImportExportObject = $Kernel::OM->Get('Kernel::System::ImportExport');
+
     # get object data
-    my $ObjectData = $Kernel::OM->Get('Kernel::System::ImportExport')->ObjectDataGet(
+    my $ObjectData = $ImportExportObject->ObjectDataGet(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -278,11 +307,12 @@ sub ExportDataGet {
             Priority => 'error',
             Message  => "No object data found for the template id $Param{TemplateID}",
         );
+
         return;
     }
 
     # get the mapping list
-    my $MappingList = $Kernel::OM->Get('Kernel::System::ImportExport')->MappingList(
+    my $MappingList = $ImportExportObject->MappingList(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -302,11 +332,10 @@ sub ExportDataGet {
     for my $MappingID ( @{$MappingList} ) {
 
         # get mapping object data
-        my $MappingObjectData =
-            $Kernel::OM->Get('Kernel::System::ImportExport')->MappingObjectDataGet(
-                MappingID => $MappingID,
-                UserID    => $Param{UserID},
-            );
+        my $MappingObjectData = $ImportExportObject->MappingObjectDataGet(
+            MappingID => $MappingID,
+            UserID    => $Param{UserID},
+        );
 
         # check mapping object data
         if ( !$MappingObjectData || ref $MappingObjectData ne 'HASH' ) {
@@ -315,10 +344,11 @@ sub ExportDataGet {
                 Priority => 'error',
                 Message  => "No valid mapping list found for the template id $Param{TemplateID}",
             );
+
             return;
         }
 
-        push( @MappingObjectList, $MappingObjectData );
+        push @MappingObjectList, $MappingObjectData;
     }
 
     # list customer companys...
@@ -363,13 +393,29 @@ sub ExportDataGet {
 
 =head2 ImportDataSave()
 
-import one row of the import data
+imports a single entity of the import data. The C<TemplateID> points to the definition
+of the current import. C<ImportDataRow> holds the data. C<Counter> is only used in
+error messages, for indicating which item was not imported successfully.
 
-    my $ConfigItemID = $ObjectBackend->ImportDataSave(
+The decision what constitute an empty value is a bit hairy.
+Here are the rules.
+Fields that are not even mentioned in the Import definition are empty. These are the 'not defined' fields.
+Empty strings and undefined values constitute empty fields.
+Fields with with only one or more whitespace characters are not empty.
+Fields with the digit '0' are not empty.
+
+    my ( $CustomerCompanyID, $RetCode ) = $ObjectBackend->ImportDataSave(
         TemplateID    => 123,
-        ImportDataRow => $ArrayReConfigf,
+        ImportDataRow => $ArrayRef,
+        Counter       => 367,
         UserID        => 1,
     );
+
+An empty C<CustomerUserID> indicates failure. Otherwise it indicates the
+location of the imported data.
+C<RetCode> is either 'Created', 'Updated' or 'Skipped'. 'Created' means that a new
+customer user has been created. 'Updated' means that the customer user has been updated. 'Skipped'
+means that the data is identical and no changes were made. 'Failed' indicates a failure.
 
 =cut
 
@@ -377,12 +423,13 @@ sub ImportDataSave {
     my ( $Self, %Param ) = @_;
 
     # check needed stuff
-    for my $Argument (qw(TemplateID ImportDataRow UserID)) {
+    for my $Argument (qw(TemplateID ImportDataRow Counter UserID)) {
         if ( !$Param{$Argument} ) {
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
                 Message  => "Need $Argument!",
             );
+
             return ( undef, 'Failed' );
         }
     }
@@ -391,13 +438,16 @@ sub ImportDataSave {
     if ( ref $Param{ImportDataRow} ne 'ARRAY' ) {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
-            Message  => 'ImportDataRow must be an array reference',
+            Message  => "Can't import entity $Param{Counter}: ImportDataRow must be an array reference",
         );
+
         return ( undef, 'Failed' );
     }
 
-    # get object data
-    my $ObjectData = $Kernel::OM->Get('Kernel::System::ImportExport')->ObjectDataGet(
+    my $ImportExportObject = $Kernel::OM->Get('Kernel::System::ImportExport');
+
+    # get object data, that is the config of this template
+    my $ObjectData = $ImportExportObject->ObjectDataGet(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -406,13 +456,16 @@ sub ImportDataSave {
     if ( !$ObjectData || ref $ObjectData ne 'HASH' ) {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
-            Message  => "No object data found for the template id $Param{TemplateID}",
+            Message  =>
+                "Can't import entity $Param{Counter}: "
+                . "No object data found for the template id '$Param{TemplateID}'",
         );
+
         return ( undef, 'Failed' );
     }
 
     # get the mapping list
-    my $MappingList = $Kernel::OM->Get('Kernel::System::ImportExport')->MappingList(
+    my $MappingList = $ImportExportObject->MappingList(
         TemplateID => $Param{TemplateID},
         UserID     => $Param{UserID},
     );
@@ -422,8 +475,11 @@ sub ImportDataSave {
 
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
-            Message  => "No valid mapping list found for the template id $Param{TemplateID}",
+            Message  =>
+                "Can't import entity $Param{Counter}: "
+                . "No valid mapping list found for the template id '$Param{TemplateID}'",
         );
+
         return ( undef, 'Failed' );
     }
 
@@ -441,19 +497,21 @@ sub ImportDataSave {
     for my $MappingID ( @{$MappingList} ) {
 
         # get mapping object data
-        my $MappingObjectData =
-            $Kernel::OM->Get('Kernel::System::ImportExport')->MappingObjectDataGet(
-                MappingID => $MappingID,
-                UserID    => $Param{UserID},
-            );
+        my $MappingObjectData = $ImportExportObject->MappingObjectDataGet(
+            MappingID => $MappingID,
+            UserID    => $Param{UserID},
+        );
 
         # check mapping object data
         if ( !$MappingObjectData || ref $MappingObjectData ne 'HASH' ) {
 
             $Kernel::OM->Get('Kernel::System::Log')->Log(
                 Priority => 'error',
-                Message  => "No valid mapping list found for template id $Param{TemplateID}",
+                Message  =>
+                    "Can't import entity $Param{Counter}: "
+                    . "No mapping object data found for the mapping id '$MappingID'",
             );
+
             return ( undef, 'Failed' );
         }
 
